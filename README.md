@@ -1,39 +1,39 @@
-# Energy-Consumption-Prediction
-CDS535 group work
-# Energy Consumption Prediction for Data Servers
-A comparison of Random Forest and Linear Regression models for data server energy consumption prediction.
+# Energy-Consumption-Prediction  
+CDS535 Group Work  
 
-## Project Overview
-This project focuses on predicting the energy consumption of data servers. We compared two popular machine learning models: **Random Forest Regression** and **Linear Regression**. The results show that Random Forest performs significantly better in terms of prediction accuracy and robustness.
+## Energy Consumption Prediction for Data Servers  
+A comparison of three models (Linear Regression, Random Forest, XGBoost) for predicting data server energy use.  
 
-## Dataset Information
-### 1. Main Energy Consumption Dataset
-The core dataset comes from the [Data Server Energy Consumption Dataset](https://ieee-dataport.org/open-access/data-server-energy-consumption-dataset) on IEEE DataPort.
-- Collected from an HP Z440 workstation over 245 days (35 weeks)
-- Sampling rate: 1 value per second
-- Includes variables like voltage (V), current (A), active power (W), CPU/GPU consumption (%), temperatures (°C), and more
-- Includes "1mayo - agosto 2021.csv" and "2agosto -dic 2021.csv"
+## Project Overview  
+We tried to predict energy consumption of HP Z440 workstations. We used data like hardware status (CPU/GPU load/temp), power parameters (voltage, current), and environmental info (temp, humidity). We compared three models, and XGBoost performed a bit better than the others.  
 
-### 2. Weather Data
-Weather data (e.g., temperature, humidity) was obtained from the public API of [open-meteo.com](https://open-meteo.com/). It corresponds to the location of the data server for accurate correlation analysis.
+## Dataset Information  
+### 1. Data Sources  
+| Data Type       | Details                                                                 |
+|-----------------|-------------------------------------------------------------------------|
+| Server Energy   | From IEEE DataPort (HP Z440) – includes voltage, current, CPU/GPU data |
+| Weather         | From Open-Meteo API – includes temp, humidity, wind speed (matched to server time/location) |
 
-### 3. Data Processing Steps
-We processed the raw data through the following steps to get the final dataset:
-1. Run `combine.py`:
-   - Convert the original second-level energy data to **hourly average values**
-   - Remove 3 less useful attributes: "MAC", "weekday", "fecha_esp32"
-   - Combine the processed energy data with matching weather data
-   - Output: `finaldata1.csv`
-2. Run `CleanMissing.py`: Handle missing values in the dataset
-   - Output: `finaldata1_nomissing.csv`
-3. Run `No0℃.py`: Remove samples with 0°C temperature (as needed for the task)
-   - Output: `finaldata1_no0temp.csv`
+### 2. Data Processing  
+We used 3 scripts to get the final dataset (`finaldata1_no0temp.csv`):  
+1. `combine.py`: Turned second-level energy data into hourly averages, removed useless columns, merged with weather data  
+2. `CleanMissing.py`: Fixed missing values  
+3. `No0℃.py`: Deleted samples with 0°C (likely sensor errors)  
+Final data: 918 rows, 17 features  
 
-## Model Comparison
-We trained and tested both models using the processed dataset:
-| Model               | Key Finding                  |
-|---------------------|------------------------------|
-| Random Forest Regression | More accurate and robust. It explains ~98% of the variance in energy consumption and has much smaller prediction errors. |
-| Linear Regression   | Less accurate. It only explains ~81% of the variance, as it cannot capture nonlinear relationships between features (e.g., CPU load vs. energy use). |
+## Model Comparison  
+We split data into 80% (train) and 20% (test). We used 3 metrics:  
+- MAE/RMSE: Lower = better (smaller prediction error)  
+- R²: Closer to 1 = better (explains more energy use variation)  
 
-<img width="660" height="447" alt="image" src="https://github.com/user-attachments/assets/dfba956a-9df6-4981-9771-bccd5b4ec520" />
+### Performance Results  
+| Model            | MAE    | RMSE   | R²    | Notes                                  |
+|------------------|--------|--------|-------|----------------------------------------|
+| XGBoost          | 3.3390 | 7.5614 | 0.9862| Slightly best – small errors, explains 98.6% variation |
+| Random Forest    | 3.4330 | 8.1994 | 0.9837| Very good – close to XGBoost           |
+| Linear Regression| 21.6024|27.9089 | 0.8117| Less good – bigger errors              |
+
+## Key Takeaways
+1. XGBoost and Random Forest are more suitable for this energy prediction task than Linear Regression  
+2. Using clean, processed data (like hourly averages) helps improve model results  
+3. Hardware and weather data together are useful for predicting server energy use
